@@ -1,0 +1,164 @@
+var audioURL = "https://www.thinkelearn.com/wp-content/uploads/2021/05/16900_1461333025.mp3";
+
+class Clock extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      break: 5,
+      session: 25,
+      label: 'Session',
+      started: false,
+      m: 25,
+      s: 0
+    }
+    this.resetClock = this.resetClock.bind(this);
+    this.startStop = this.startStop.bind(this);
+    this.decrementBreak = this.decrementBreak.bind(this);
+    this.incrementBreak = this.incrementBreak.bind(this);
+    this.decrementSession = this.decrementSession.bind(this);
+    this.incrementSession = this.incrementSession.bind(this);
+  };
+  
+  resetClock() {
+    this.stopCountdown()
+    this.loadAudio()
+    this.setState({
+      break: 5,
+      session: 25,
+      label: 'Session',
+      started: false,
+      m: 25,
+      s: 0
+    })
+  };
+  
+  decrementBreak() {
+    if (this.state.break > 1) {
+      this.setState((state) => {
+        return {break: state.break - 1}
+      });
+    }
+  };
+  
+  incrementBreak() {
+    if (this.state.break < 60) {
+      this.setState((state) => {
+        return {break: state.break + 1}
+      });
+    } 
+  };
+  
+  decrementSession() {
+    if (this.state.session > 1) {
+      this.setState((state) => {
+        return {session: state.session - 1, m: state.m - 1}
+      });
+    }
+  };
+  
+  incrementSession() {
+    if (this.state.session < 60) {
+      this.setState((state) => {
+        return {session: state.session + 1, m: state.m + 1}
+      });
+    }
+  };
+  
+  startCountdown = () => {
+    this.intervalID = setInterval(this.tick, 1000);
+    this.setState({started: true});
+  };
+  
+  stopCountdown = () => {
+    clearInterval(this.intervalID)
+    this.setState({started: false})
+  };
+  
+  startStop() {
+    !this.state.started
+    ? this.startCountdown()
+    : this.stopCountdown()
+  };
+  
+  tick = () => {
+    if (this.state.started === false) return;
+    if (this.state.m === 0 && this.state.s === 0 && this.state.label === 'Session') {
+      this.setState({label: 'Break', m: this.state.break})
+      this.playAudio()
+    } else if (this.state.m === 0 && this.state.s === 0 && this.state.label === 'Break') {
+      this.setState({label: 'Session', m: this.state.session})
+      this.playAudio()
+    } else if (this.state.s === 0) {
+      this.setState((state)=>{return{m: state.m - 1, s: 59}});
+    } else {
+      this.setState((state)=>{return{s: state.s - 1}});
+    } 
+  };
+  
+  playAudio() {
+    document.getElementById("beep").play()
+  }
+  
+  loadAudio() {
+    document.getElementById("beep").load()
+  }
+  
+  render() {
+    //console.log(this.state);
+    return (
+      <div id="clock" className="container">
+        <div className="row">
+          <div className="col text-center">
+            {this.state.label === "Session"
+              ? <i class="fas fa-bell fa-3x"></i>
+              : <i class="far fa-bell fa-3x"></i>}
+          </div>
+        </div>
+        <div className="row justify-content-evenly">
+          <div id="break-label" className="col text-center">Break Length</div>
+          <div id="session-label" className="col text-center">Session Length</div>
+        </div>
+        <div className="row justify-content-evenly">
+          <div className="col text-center">
+            <i id="break-decrement" className="fas fa-arrow-down p-2" onClick={this.decrementBreak}></i>
+            <span id="break-length">{this.state.break}</span>
+            <i id="break-increment" className="fas fa-arrow-up p-2" onClick={this.incrementBreak}></i>
+          </div>
+          <div className="col text-center">
+            <i id="session-decrement" className="fas fa-arrow-down p-2" onClick={this.decrementSession}></i>
+            <span id="session-length">{this.state.session}</span>
+            <i id="session-increment" className="fas fa-arrow-up p-2" onClick={this.incrementSession}></i>
+          </div>
+        </div>
+        <div className="row">
+          <div id="timer-label" className="col text-center">{this.state.label}</div>
+        </div>
+        <div className="row">
+          <div id="time-left" className="col text-center">
+            {this.state.m.toString().padStart(2, '0')}
+            :
+            {this.state.s.toString().padStart(2, '0')}
+          </div>
+        </div>
+        <div className="row justify-content-center">
+          <div className="col-1 text-center">
+            {this.state.started 
+              ? <i id="start_stop" className="fas fa-pause" onClick={this.startStop}></i> 
+              : <i id="start_stop" className="fas fa-play" onClick={this.startStop}></i>
+            }
+          </div>
+          <div className="col-1 text-center">
+            <i id="reset" className="fas fa-sync-alt" onClick={this.resetClock}></i>
+          </div>
+        </div>
+        <div><audio id="beep" src={audioURL}></audio></div>
+      </div>
+    )
+  }
+}
+
+ReactDOM.render(
+  <Clock />,
+  document.getElementById('root')
+);
+
